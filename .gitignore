@@ -1,0 +1,9 @@
+.venv/
+llama.cpp/
+*-adapters/
+*-merged/
+tokenizer/
+*.png
+*.pkl
+*.pt
+*.gguf
