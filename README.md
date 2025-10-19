@@ -5,8 +5,9 @@
 ```bash
 cd gemma-finetune
 
-uv init
-uv python pin 3.13
+uv init --app --python 3.12
+uv venv
+source .venv/bin/activate
 
 uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 uv add transformers trl datasets accelerate evaluate
