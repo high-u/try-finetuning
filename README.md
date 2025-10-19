@@ -33,7 +33,8 @@ cd ..
 cd gemma-finetune
 
 uv init --app --python 3.12
-
+uv venv
+source .venv/bin/activate
 
 uv add transformers peft datasets accelerate trl safetensors
 uv add torch torchvision torchaudio
@@ -41,5 +42,4 @@ uv add emoji tensorboard matplotlib
 
 uv add mistral_common sentencepiece # GGUF
 
-source .venv/bin/activate
 ```
