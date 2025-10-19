@@ -1,5 +1,5 @@
 """
-Step 12: Quantize to GGUF (Q4_0)
+Step 12: Quantize to GGUF (Q8_0)
 最小実装: 必須引数で指定されたパスをそのまま用いて、
 1) convert_hf_to_gguf.py を実行
 2) llama-quantize で量子化
@@ -51,7 +51,7 @@ def main() -> None:
 
     # 2) 量子化 (Q4_0 など)
     # 例: ./quantize model-f32.gguf model-Q4_0.gguf Q4_0
-    qtype = "Q4_0"
+    qtype = "Q8_0"
     quantized = (out_dir / f"model-{qtype}.gguf").resolve()
     cmd_quant = [
         str(quantize_bin),

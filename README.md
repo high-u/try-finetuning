@@ -3,7 +3,6 @@
 ## linux + rtx5070ti
 
 ```bash
-mkdir -p gemma-finetune
 cd gemma-finetune
 
 uv init
@@ -24,8 +23,8 @@ uv add gguf
 git clone https://github.com/ggml-org/llama.cpp.git
 cd llama.cpp
 
-cmake --build build
 cmake -B build
+cmake --build build
 
 cd ..
 ```
@@ -34,11 +33,13 @@ cd ..
 cd gemma-finetune
 
 uv init --app --python 3.12
-source .venv/bin/activate
+
 
 uv add transformers peft datasets accelerate trl safetensors
 uv add torch torchvision torchaudio
 uv add emoji tensorboard matplotlib
 
 uv add mistral_common sentencepiece # GGUF
+
+source .venv/bin/activate
 ```

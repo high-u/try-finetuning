@@ -23,7 +23,7 @@ export HF_TOKEN="hf_xxxxxxxxxxxxxxxxxxx"
 Hugging Face Hubにログインします。環境変数`HF_TOKEN`に設定したトークンを使用して認証を行います。
 
 ```bash
-uv run python 01_login_hf.py
+uv run 01_login_hf.py
 ```
 
 ### 2. データセット読み込み
@@ -33,7 +33,7 @@ Hugging Faceからテキストと絵文字のペアを含むデータセット�
 **出力**: `dataset.pkl`
 
 ```bash
-uv run python 02_load_dataset.py
+uv run 02_load_dataset.py
 ```
 
 ### 3. ベースモデル読み込み
@@ -43,7 +43,7 @@ Gemma 3 270Mの命令調整済みモデル（`google/gemma-3-270m-it`）をHuggi
 **出力**: `base_model_state.pt`, `tokenizer/`, `model_config.pkl`
 
 ```bash
-uv run python 03_load_model.py
+uv run 03_load_model.py
 ```
 
 ### 4. データセット整形
@@ -53,7 +53,7 @@ uv run python 03_load_model.py
 **出力**: `training_dataset_splits.pkl`
 
 ```bash
-uv run python 04_format_dataset.py
+uv run 04_format_dataset.py
 ```
 
 ### 5. ベースモデルテスト（オプション）
@@ -61,7 +61,7 @@ uv run python 04_format_dataset.py
 ファインチューニング前のベースモデルの性能を確認します。テストデータセットからランダムにサンプルを選び、「テキストを絵文字に翻訳」というタスクに対する出力を生成して表示します。
 
 ```bash
-uv run python 05_test_base_model.py
+uv run 05_test_base_model.py
 ```
 
 ### 6. トレーニング設定
@@ -75,7 +75,7 @@ uv run python 05_test_base_model.py
 **出力**: `training_config.pkl`
 
 ```bash
-uv run python 06_configure_training.py
+uv run 06_configure_training_cpu.py
 ```
 
 ### 7. モデル訓練（T4 GPUで約10分）
@@ -85,7 +85,7 @@ SFTTrainerを使ってモデルをファインチューニングします。LoRA
 **出力**: `myemoji-gemma-adapters/` (LoRAアダプター), `trainer.pkl`
 
 ```bash
-uv run python 07_train_model.py
+uv run 07_train_model_cpu.py
 ```
 
 ### 8. 訓練結果の可視化
@@ -95,7 +95,7 @@ uv run python 07_train_model.py
 **出力**: `training_loss.png`
 
 ```bash
-uv run python 08_plot_results.py
+uv run 08_plot_results.py
 ```
 
 ### 9. アダプターのマージ
@@ -105,7 +105,7 @@ uv run python 08_plot_results.py
 **出力**: `myemoji-gemma-merged/` (マージ済みモデル), `merged_model_path.pkl`
 
 ```bash
-uv run python 09_merge_adapters.py
+uv run 09_merge_adapters_cpu.py
 ```
 
 ### 10. ファインチューニング済みモデルのテスト
@@ -113,7 +113,7 @@ uv run python 09_merge_adapters.py
 ファインチューニング後のモデルとベースモデルの出力を比較します。複数のテストプロンプト（「let's go to the beach」「I love pizza」など）に対して両方のモデルの出力を表示し、性能の改善を確認します。
 
 ```bash
-uv run python 10_test_finetuned.py
+uv run 10_test_finetuned.py
 ```
 
 ### 11. tokenizer.model を取得
@@ -128,6 +128,15 @@ uv run 11_get_tokenizer_model.py
 
 ```bash
 uv run 12_quantize_gguf.py --llama-cpp-dir ../llama.cpp
+```
+
+### 13. LM Studio
+
+```bash
+# Windows WSL の場合は？ LM Studio のインストール場所？
+
+mkdir -p ~/.lmstudio/models/MyModels/emoji-gemma
+cp gguf-out/model-Q4_0.gguf ~/.lmstudio/models/MyModels/emoji-gemma/
 ```
 
 ## 出力ファイル
