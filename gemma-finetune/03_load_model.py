@@ -25,9 +25,13 @@ print(f"Model: {gemma_model}")
 # Save tokenizer for next steps
 tokenizer.save_pretrained('tokenizer')
 
+# Get model parameters count
+total_params = sum(p.numel() for p in base_model.parameters())
+
 # Save model configuration for next steps
 model_config = {
-    "model_name": gemma_model
+    "model_name": gemma_model,
+    "total_parameters": total_params
 }
 with open('training_model.json', 'w', encoding='utf-8') as f:
     json.dump(model_config, f, indent=2, ensure_ascii=False)

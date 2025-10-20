@@ -21,12 +21,13 @@ def get_device_type():
 def configure_training(device_type):
     """デバイスに応じて設定を変更"""
     if device_type == "cuda":
-        # GPU用設定：4bit量子化、bfloat16
+        # 常に8ビット量子化を使用
         bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16
+            load_in_8bit=True,
+            llm_int8_threshold=6.0,  # デフォルト値を明示
+            llm_int8_has_fp16_weight=False
         )
+        
         torch_dtype = torch.bfloat16
         device_map = "auto"
         optim = "adamw_torch_fused"
@@ -127,6 +128,7 @@ trainer = SFTTrainer(
     train_dataset=train_dataset,
     eval_dataset=eval_dataset,
     peft_config=lora_config,
+    processing_class=tokenizer,
 )
 trainer.train()
 trainer.save_model(adapter_path)

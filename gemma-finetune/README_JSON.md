@@ -74,6 +74,19 @@ uv run 09_merge_adapters.py
 uv run 10_test_finetuned.py
 ```
 
+### 12. GGUF 変換
+
+```bash
+deactivate
+source ../llama.cpp/.venv/bin/activate
+
+uv run 12_quantize_gguf.py --llama-cpp-dir ../llama.cpp
+
+mkdir -p ~/.lmstudio/models/mymodel/emoji-gemma-1b
+cp gguf-out/model-Q8_0.gguf ~/.lmstudio/models/mymodel/emoji-gemma-1b/
+
+```
+
 ## 出力ファイル
 
 - `dataset.pkl` - 読み込んだデータセット
