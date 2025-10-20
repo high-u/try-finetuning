@@ -4,11 +4,11 @@ Visualize training and validation loss
 """
 
 import matplotlib.pyplot as plt
-import pickle
+import json
 
 # Load training log history
-with open('training_log.pkl', 'rb') as f:
-    log_history = pickle.load(f)
+with open('training_log.json', 'r', encoding='utf-8') as f:
+    log_history = json.load(f)
 
 # Extract training / validation loss
 train_losses = [log["loss"] for log in log_history if "loss" in log]

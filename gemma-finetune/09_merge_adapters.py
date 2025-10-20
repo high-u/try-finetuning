@@ -7,12 +7,13 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 import pickle
+import json
 
 # Load config
 with open('model_config.pkl', 'rb') as f:
     config = pickle.load(f)
-with open('training_config.pkl', 'rb') as f:
-    training_config = pickle.load(f)
+with open('training_config.json', 'r', encoding='utf-8') as f:
+    training_config = json.load(f)
 
 gemma_model = config['gemma_model']
 adapter_path = training_config['adapter_path']
