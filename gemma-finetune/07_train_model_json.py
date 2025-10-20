@@ -5,16 +5,15 @@ This will take about 10 minutes on a T4 GPU
 """
 
 import torch
+import os
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import LoraConfig
 from trl import SFTConfig, SFTTrainer
-import pickle
 import json
 from datasets import Dataset
 
-# Load configurations and data
-with open('model_config.pkl', 'rb') as f:
-    config = pickle.load(f)
+# Get model name from environment variable or use default
+gemma_model = os.getenv('FINETUNE_GEMMA_MODEL') or 'google/gemma-3-270m-it'
 
 # Load training data from JSON file
 with open('training_data.json', 'r', encoding='utf-8') as f:
@@ -31,7 +30,6 @@ training_dataset_splits = {
 }
 
 # Configure training parameters
-gemma_model = config['gemma_model']
 adapter_path = "./myemoji-gemma-adapters"
 
 # Load tokenizer

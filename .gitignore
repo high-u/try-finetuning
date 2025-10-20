@@ -19,3 +19,4 @@ wheels/
 # training
 training_config.json
 training_log.json
+training_merge.json

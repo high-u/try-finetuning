@@ -4,15 +4,15 @@ Compare fine-tuned model against base model
 """
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-import pickle
+import os
+import json
+
+# Get model name from environment variable or use default
+gemma_model = os.getenv('FINETUNE_GEMMA_MODEL') or 'google/gemma-3-270m-it'
 
 # Load paths
-with open('model_config.pkl', 'rb') as f:
-    config = pickle.load(f)
-with open('merged_model_path.pkl', 'rb') as f:
-    paths = pickle.load(f)
-
-gemma_model = config['gemma_model']
+with open('training_merge.json', 'r', encoding='utf-8') as f:
+    paths = json.load(f)
 merged_model_path = paths['merged_model_path']
 
 # Create Transformers inference pipeline

@@ -4,18 +4,17 @@ Merge the LoRA adapters with the base model
 """
 
 import torch
+import os
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
-import pickle
 import json
 
-# Load config
-with open('model_config.pkl', 'rb') as f:
-    config = pickle.load(f)
+# Get model name from environment variable or use default
+gemma_model = os.getenv('FINETUNE_GEMMA_MODEL') or 'google/gemma-3-270m-it'
+
+# Load training config
 with open('training_config.json', 'r', encoding='utf-8') as f:
     training_config = json.load(f)
-
-gemma_model = config['gemma_model']
 adapter_path = training_config['adapter_path']
 merged_model_path = "./myemoji-gemma-merged/"
 
@@ -38,5 +37,6 @@ print(f"\nModel merged and saved to {merged_model_path}")
 print(f"Final model vocabulary size: {model.config.vocab_size}")
 
 # Save path for next steps
-with open('merged_model_path.pkl', 'wb') as f:
-    pickle.dump({'merged_model_path': merged_model_path}, f)
+with open('training_merge.json', 'w', encoding='utf-8') as f:
+    json.dump({'merged_model_path': merged_model_path}, f, indent=2)
+print("Merge configuration saved to training_merge.json")
