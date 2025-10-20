@@ -18,3 +18,4 @@ wheels/
 
 # training
 trainings/
+training_data_sql.json
