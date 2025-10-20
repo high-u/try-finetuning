@@ -2,24 +2,6 @@
 
 このプロジェクトは、Gemma 3 270Mをテキストから絵文字への変換タスクでファインチューニングするためのステップバイステップのスクリプト集です。
 
-## 前提条件
-
-- Python 3.13
-- CUDAが使えるGPU（推奨: T4以上）
-- GemmaモデルにアクセスできるHugging Faceアカウント
-
-## インストール
-
-```bash
-uv init
-uv python pin 3.13
-
-uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-uv add transformers trl datasets accelerate evaluate
-uv add sentencepiece bitsandbytes protobuf
-uv add emoji tensorboard matplotlib peft huggingface-hub
-```
-
 ## セットアップ
 
 1. Gemmaのライセンスに同意: [huggingface.co/google/gemma-3-270m-it](https://huggingface.co/google/gemma-3-270m-it)

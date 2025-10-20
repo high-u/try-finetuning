@@ -127,6 +127,15 @@ uv run 11_get_tokenizer_model.py
 ../llama.cpp がある前提
 
 ```bash
+uv run 12_quantize_gguf_cpu.py --llama-cpp-dir ../llama.cpp
+```
+
+GPU 環境では、UV 環境を切り替えてから行う必要がある。
+
+```bash
+deactivate
+source ../llama.cpp/.venv/bin/activate
+
 uv run 12_quantize_gguf.py --llama-cpp-dir ../llama.cpp
 ```
 

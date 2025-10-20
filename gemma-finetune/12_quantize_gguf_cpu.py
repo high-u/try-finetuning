@@ -39,10 +39,8 @@ def main() -> None:
     # 1) 未量子化 GGUF への変換
     # 例: python convert-hf-to-gguf.py /path/to/model --outfile out_dir/model-f32.gguf
     unquantized = (out_dir / "model-f32.gguf").resolve()
-    # llama.cppのuv環境を使用
-    llama_uv_python = llama_dir / ".venv" / "bin" / "python3"
     cmd_convert = [
-        str(llama_uv_python),
+        sys.executable,
         str(convert_py),
         str(model_dir.resolve()),
         "--outfile",
