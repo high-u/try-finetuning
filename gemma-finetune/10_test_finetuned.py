@@ -4,11 +4,12 @@ Compare fine-tuned model against base model
 """
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-import os
 import json
 
-# Get model name from environment variable or use default
-gemma_model = os.getenv('FINETUNE_GEMMA_MODEL') or 'google/gemma-3-270m-it'
+# Load model configuration
+with open('training_model.json', 'r', encoding='utf-8') as f:
+    model_config = json.load(f)
+gemma_model = model_config['model_name']
 
 # Load paths
 with open('training_merge.json', 'r', encoding='utf-8') as f:

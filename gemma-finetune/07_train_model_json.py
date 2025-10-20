@@ -5,15 +5,16 @@ This will take about 10 minutes on a T4 GPU
 """
 
 import torch
-import os
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import LoraConfig
 from trl import SFTConfig, SFTTrainer
 import json
 from datasets import Dataset
 
-# Get model name from environment variable or use default
-gemma_model = os.getenv('FINETUNE_GEMMA_MODEL') or 'google/gemma-3-270m-it'
+# Load model configuration
+with open('training_model.json', 'r', encoding='utf-8') as f:
+    model_config = json.load(f)
+gemma_model = model_config['model_name']
 
 # Load training data from JSON file
 with open('training_data.json', 'r', encoding='utf-8') as f:

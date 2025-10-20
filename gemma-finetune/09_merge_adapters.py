@@ -3,14 +3,14 @@ Step 9: Merge Adapters
 Merge the LoRA adapters with the base model
 """
 
-import torch
-import os
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 import json
 
-# Get model name from environment variable or use default
-gemma_model = os.getenv('FINETUNE_GEMMA_MODEL') or 'google/gemma-3-270m-it'
+# Load model configuration
+with open('training_model.json', 'r', encoding='utf-8') as f:
+    model_config = json.load(f)
+gemma_model = model_config['model_name']
 
 # Load training config
 with open('training_config.json', 'r', encoding='utf-8') as f:

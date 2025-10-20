@@ -17,6 +17,4 @@ wheels/
 *.egg-info
 
 # training
-training_config.json
-training_log.json
-training_merge.json
+training_*.json
