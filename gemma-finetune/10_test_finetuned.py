@@ -3,8 +3,27 @@ Step 10: Test Fine-tuned Model
 Compare fine-tuned model against base model
 """
 
+import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import json
+
+def get_device_type():
+    """CPUかCUDA GPUかを自動判別"""
+    if torch.cuda.is_available():
+        return "cuda"
+    else:
+        return "cpu"
+
+def configure_inference_settings(device_type):
+    """デバイスに応じて設定を変更"""
+    if device_type == "cuda":
+        device_map = "auto"
+        torch_dtype = torch.bfloat16
+    else:
+        device_map = "cpu"
+        torch_dtype = torch.float32
+    
+    return device_map, torch_dtype
 
 # Load model configuration
 with open('training_model.json', 'r', encoding='utf-8') as f:
@@ -16,12 +35,22 @@ with open('training_merge.json', 'r', encoding='utf-8') as f:
     paths = json.load(f)
 merged_model_path = paths['merged_model_path']
 
+# Detect device type and configure inference settings
+device_type = get_device_type()
+print(f"Detected device type: {device_type}")
+
+device_map, torch_dtype = configure_inference_settings(device_type)
+
 # Create Transformers inference pipeline
 print("Loading models...")
-merged_model = AutoModelForCausalLM.from_pretrained(merged_model_path, device_map="auto")
+merged_model = AutoModelForCausalLM.from_pretrained(
+    merged_model_path, 
+    device_map=device_map,
+    torch_dtype=torch_dtype
+)
 tokenizer = AutoTokenizer.from_pretrained(merged_model_path)
 pipe = pipeline("text-generation", model=merged_model, tokenizer=tokenizer)
-pipe_base = pipeline("text-generation", model=gemma_model, device_map="auto")
+pipe_base = pipeline("text-generation", model=gemma_model, device_map=device_map)
 
 # Test prompts
 test_prompts = [

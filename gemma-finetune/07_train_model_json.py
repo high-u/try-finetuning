@@ -11,6 +11,34 @@ from trl import SFTConfig, SFTTrainer
 import json
 from datasets import Dataset
 
+def get_device_type():
+    """CPUかCUDA GPUかを自動判別"""
+    if torch.cuda.is_available():
+        return "cuda"
+    else:
+        return "cpu"
+
+def configure_training(device_type):
+    """デバイスに応じて設定を変更"""
+    if device_type == "cuda":
+        # GPU用設定：4bit量子化、bfloat16
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.bfloat16
+        )
+        torch_dtype = torch.bfloat16
+        device_map = "auto"
+        optim = "adamw_torch_fused"
+    else:
+        # CPU用設定：量子化なし、float32
+        bnb_config = None
+        torch_dtype = torch.float32
+        device_map = "cpu"
+        optim = "adamw_torch"
+    
+    return bnb_config, torch_dtype, device_map, optim
+
 # Load model configuration
 with open('training_model.json', 'r', encoding='utf-8') as f:
     model_config = json.load(f)
@@ -36,12 +64,11 @@ adapter_path = "./myemoji-gemma-adapters"
 # Load tokenizer
 tokenizer = AutoTokenizer.from_pretrained('tokenizer')
 
-# Configure quantization
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.bfloat16
-)
+# Detect device type and configure training
+device_type = get_device_type()
+print(f"Detected device type: {device_type}")
+
+bnb_config, torch_dtype, device_map, optim = configure_training(device_type)
 
 # Configure LoRA
 lora_config = LoraConfig(
@@ -67,17 +94,24 @@ args = SFTConfig(
     max_length=256,
     gradient_checkpointing=False,
     packing=False,
-    optim="adamw_torch_fused",
+    optim=optim,
     report_to="tensorboard",
     weight_decay=0.01,
 )
 
-# Load model with quantization for training
+# Load model with device-specific configuration
+model_kwargs = {
+    'attn_implementation': 'eager'
+}
+
+if bnb_config is not None:
+    model_kwargs['quantization_config'] = bnb_config
+
 base_model = AutoModelForCausalLM.from_pretrained(
     gemma_model,
-    quantization_config=bnb_config,
-    device_map="auto",
-    attn_implementation='eager'
+    device_map=device_map,
+    torch_dtype=torch_dtype,
+    **model_kwargs
 )
 base_model.config.pad_token_id = tokenizer.pad_token_id
 
