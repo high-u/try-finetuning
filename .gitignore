@@ -17,4 +17,4 @@ wheels/
 *.egg-info
 
 # training
-training_*.json
+trainings/

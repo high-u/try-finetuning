@@ -4,12 +4,46 @@ Fine-tune the model using SFTTrainer
 This will take about 10 minutes on a T4 GPU
 """
 
+import os
+import argparse
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import LoraConfig
 from trl import SFTConfig, SFTTrainer
 import json
 from datasets import Dataset
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Fine-tune Gemma model')
+parser.add_argument('--batch-size', type=int, default=1,
+                    help='Per device train batch size (default: 1)')
+parser.add_argument('--epochs', type=int, default=2,
+                    help='Number of training epochs (default: 2)')
+parser.add_argument('--max-length', type=int, default=512,
+                    help='Maximum sequence length (default: 512)')
+parser.add_argument('--max-samples', type=int, default=None,
+                    help='Maximum number of samples to use (default: None, use all)')
+parser.add_argument('--quantization', type=int, choices=[4, 8], default=8,
+                    help='Training quantization bits: 4 or 8 (default: 8)')
+
+args = parser.parse_args()
+
+# Environment variables
+TRAINING_NAME = os.getenv("TRAINING_NAME", "default")
+TRAINING_DATA_FILE = os.getenv("TRAINING_DATA_FILE", "training_data.json")
+
+# Setup training directory structure
+BASE_DIR = f"./trainings/{TRAINING_NAME}"
+os.makedirs(BASE_DIR, exist_ok=True)
+
+print(f"Training name: {TRAINING_NAME}")
+print(f"Training data file: {TRAINING_DATA_FILE}")
+print(f"Using {args.quantization}-bit quantization for training")
+print(f"Batch size: {args.batch_size}")
+print(f"Epochs: {args.epochs}")
+print(f"Max length: {args.max_length}")
+print(f"Max samples: {args.max_samples if args.max_samples else 'all'}")
+print(f"Output directory: {BASE_DIR}")
 
 def get_device_type():
     """CPUかCUDA GPUかを自動判別"""
@@ -18,36 +52,55 @@ def get_device_type():
     else:
         return "cpu"
 
-def configure_training(device_type):
-    """デバイスに応じて設定を変更"""
+def configure_training(device_type, quantization_bits=8):
+    """デバイスと量子化ビット数に応じて設定を変更"""
+    model_kwargs = {'attn_implementation': 'eager'}
+
     if device_type == "cuda":
-        # 常に8ビット量子化を使用
-        bnb_config = BitsAndBytesConfig(
-            load_in_8bit=True,
-            llm_int8_threshold=6.0,  # デフォルト値を明示
-            llm_int8_has_fp16_weight=False
-        )
-        
-        torch_dtype = torch.bfloat16
-        device_map = "auto"
+        model_kwargs['device_map'] = "auto"
+
+        if quantization_bits == 4:
+            # 4ビット量子化設定
+            model_kwargs['quantization_config'] = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16,
+                bnb_4bit_use_double_quant=True,
+            )
+        else:  # 8-bit
+            # 8ビット量子化設定
+            model_kwargs['quantization_config'] = BitsAndBytesConfig(
+                load_in_8bit=True,
+                llm_int8_threshold=6.0,
+                llm_int8_has_fp16_weight=False
+            )
+        # 量子化使用時はtorch_dtypeを指定しない（BitsAndBytesが自動処理）
+
         optim = "adamw_torch_fused"
     else:
-        # CPU用設定：量子化なし、float32
-        bnb_config = None
-        torch_dtype = torch.float32
-        device_map = "cpu"
+        # CPU用設定：量子化なし
+        model_kwargs['device_map'] = "cpu"
+        model_kwargs['torch_dtype'] = torch.float32
         optim = "adamw_torch"
-    
-    return bnb_config, torch_dtype, device_map, optim
+
+    return model_kwargs, optim
 
 # Load model configuration
-with open('training_model.json', 'r', encoding='utf-8') as f:
+model_config_path = f'{BASE_DIR}/model.json'
+with open(model_config_path, 'r', encoding='utf-8') as f:
     model_config = json.load(f)
 gemma_model = model_config['model_name']
 
 # Load training data from JSON file
-with open('training_data.json', 'r', encoding='utf-8') as f:
+with open(TRAINING_DATA_FILE, 'r', encoding='utf-8') as f:
     training_data = json.load(f)
+
+# Limit dataset size to prevent excessive training time
+if args.max_samples and len(training_data) > args.max_samples:
+    print(f"Limiting dataset from {len(training_data)} to {args.max_samples} samples")
+    import random
+    random.seed(42)
+    training_data = random.sample(training_data, args.max_samples)
 
 # Convert to Dataset object
 full_dataset = Dataset.from_list(training_data)
@@ -60,16 +113,17 @@ training_dataset_splits = {
 }
 
 # Configure training parameters
-adapter_path = "./myemoji-gemma-adapters"
+adapter_path = f"{BASE_DIR}/adapters"
 
 # Load tokenizer
-tokenizer = AutoTokenizer.from_pretrained('tokenizer')
+tokenizer_path = f'{BASE_DIR}/tokenizer'
+tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
 
 # Detect device type and configure training
 device_type = get_device_type()
 print(f"Detected device type: {device_type}")
 
-bnb_config, torch_dtype, device_map, optim = configure_training(device_type)
+model_kwargs, optim = configure_training(device_type, args.quantization)
 
 # Configure LoRA
 lora_config = LoraConfig(
@@ -83,17 +137,18 @@ lora_config = LoraConfig(
 )
 
 # Configure training arguments
-args = SFTConfig(
+sft_args = SFTConfig(
     output_dir=adapter_path,
-    num_train_epochs=3,
-    per_device_train_batch_size=4,
+    num_train_epochs=args.epochs,
+    per_device_train_batch_size=args.batch_size,
+    per_device_eval_batch_size=args.batch_size,
     logging_strategy="epoch",
     eval_strategy="epoch",
     save_strategy="epoch",
     learning_rate=5e-5,
     lr_scheduler_type="constant",
-    max_length=256,
-    gradient_checkpointing=False,
+    max_length=args.max_length,
+    gradient_checkpointing=True,
     packing=False,
     optim=optim,
     report_to="tensorboard",
@@ -101,17 +156,8 @@ args = SFTConfig(
 )
 
 # Load model with device-specific configuration
-model_kwargs = {
-    'attn_implementation': 'eager'
-}
-
-if bnb_config is not None:
-    model_kwargs['quantization_config'] = bnb_config
-
 base_model = AutoModelForCausalLM.from_pretrained(
     gemma_model,
-    device_map=device_map,
-    torch_dtype=torch_dtype,
     **model_kwargs
 )
 base_model.config.pad_token_id = tokenizer.pad_token_id
@@ -124,7 +170,7 @@ eval_dataset = training_dataset_splits['test']
 print("Starting training...")
 trainer = SFTTrainer(
     model=base_model,
-    args=args,
+    args=sft_args,
     train_dataset=train_dataset,
     eval_dataset=eval_dataset,
     peft_config=lora_config,
@@ -137,14 +183,24 @@ print(f"\nLoRA adapters saved to {adapter_path}")
 
 # Save training log history for plotting
 training_log = trainer.state.log_history
-with open('training_log.json', 'w', encoding='utf-8') as f:
+log_path = f'{BASE_DIR}/log.json'
+with open(log_path, 'w', encoding='utf-8') as f:
     json.dump(training_log, f, indent=2, ensure_ascii=False)
-print("Training log saved to training_log.json")
+print(f"Training log saved to {log_path}")
 
 # Save training configuration for next steps
 training_config = {
-    "adapter_path": adapter_path
+    "training_name": TRAINING_NAME,
+    "adapter_path": adapter_path,
+    "training_data_file": TRAINING_DATA_FILE,
+    "base_dir": BASE_DIR,
+    "train_quantization": args.quantization,
+    "batch_size": args.batch_size,
+    "epochs": args.epochs,
+    "max_length": args.max_length,
+    "max_samples": args.max_samples
 }
-with open('training_config.json', 'w', encoding='utf-8') as f:
+config_path = f'{BASE_DIR}/config.json'
+with open(config_path, 'w', encoding='utf-8') as f:
     json.dump(training_config, f, indent=2, ensure_ascii=False)
-print("Training configuration saved to training_config.json")
+print(f"Training configuration saved to {config_path}")

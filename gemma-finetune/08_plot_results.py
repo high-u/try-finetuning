@@ -5,9 +5,15 @@ Visualize training and validation loss
 
 import matplotlib.pyplot as plt
 import json
+import os
+
+# Environment variables
+TRAINING_NAME = os.getenv("TRAINING_NAME", "default")
+BASE_DIR = f"./trainings/{TRAINING_NAME}"
 
 # Load training log history
-with open('training_log.json', 'r', encoding='utf-8') as f:
+log_path = f'{BASE_DIR}/log.json'
+with open(log_path, 'r', encoding='utf-8') as f:
     log_history = json.load(f)
 
 # Extract training / validation loss
@@ -25,9 +31,10 @@ plt.ylabel("Loss")
 plt.title("Training and Validation Loss per Epoch")
 plt.legend()
 plt.grid(True)
-plt.savefig('training_loss.png', dpi=150, bbox_inches='tight')
+plot_path = f'{BASE_DIR}/loss.png'
+plt.savefig(plot_path, dpi=150, bbox_inches='tight')
 plt.show()
 
-print("\nPlot saved to training_loss.png")
+print(f"\nPlot saved to {plot_path}")
 print(f"\nFinal training loss: {train_losses[-1]:.4f}")
 print(f"Final validation loss: {eval_losses[-1]:.4f}")

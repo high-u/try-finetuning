@@ -16,7 +16,14 @@ export HF_TOKEN="hf_xxxxxxxxxxxxxxxxxxx"
 
 ## 実行手順
 
-スクリプトを順番に実行してください：
+### 環境
+
+```bash
+export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
+export TRAINING_NAME="text2sql"
+export TRAINING_DATA_FILE="training_data_sql.json"
+
+```
 
 ### 1. 認証
 
@@ -44,6 +51,15 @@ SFTTrainerを使ってモデルをファインチューニングします。LoRA
 
 ```bash
 uv run 07_train_model_json.py
+```
+
+```bash
+uv run python 07_train_model_json.py \
+  --quantization 4 \
+  --batch-size 1 \
+  --epochs 2 \
+  --max-length 512 \
+  --max-samples 1000
 ```
 
 ### 8. 訓練結果の可視化
