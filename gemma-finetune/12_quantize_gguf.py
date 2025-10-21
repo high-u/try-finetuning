@@ -12,6 +12,8 @@ import argparse
 import subprocess
 from pathlib import Path
 import sys
+import os
+import json
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> None:
@@ -28,12 +30,20 @@ def main() -> None:
     ap.add_argument("--llama-cpp-dir", type=Path, required=True)
     args = ap.parse_args()
 
-    # 決め打ち（他スクリプトの方針に合わせる）
+    # Environment variables
+    TRAINING_NAME = os.getenv("TRAINING_NAME", "default")
+    BASE_DIR = f"./trainings/{TRAINING_NAME}"
+
+    # Load config
+    with open(f'{BASE_DIR}/config.json', 'r', encoding='utf-8') as f:
+        config = json.load(f)
+
+    # Setup paths
     llama_dir = args.llama_cpp_dir.resolve()
     convert_py = (llama_dir / "convert_hf_to_gguf.py").resolve()
     quantize_bin = (llama_dir / "build" / "bin" / "llama-quantize").resolve()
-    model_dir = Path("./myemoji-gemma-merged").resolve()
-    out_dir = Path("./gguf-out").resolve()
+    model_dir = Path(config['merged_model_path']).resolve()
+    out_dir = Path(f"{BASE_DIR}/gguf").resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # 1) 未量子化 GGUF への変換

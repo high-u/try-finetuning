@@ -32,7 +32,8 @@ def configure_inference_settings(device_type):
     return device_map, torch_dtype
 
 # Load model configuration
-with open('training_model.json', 'r', encoding='utf-8') as f:
+model_config_path = f'{BASE_DIR}/model.json'
+with open(model_config_path, 'r', encoding='utf-8') as f:
     model_config = json.load(f)
 gemma_model = model_config['model_name']
 
