@@ -19,9 +19,9 @@ export HF_TOKEN="hf_xxxxxxxxxxxxxxxxxxx"
 ### 環境
 
 ```bash
-export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
-export TRAINING_NAME="text2sql"
-export TRAINING_DATA_FILE="training_data_sql.json"
+export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it" # google/gemma-3-270m-it, google/gemma-3-1b-it
+export TRAINING_NAME="onetwothree"
+export TRAINING_DATA_FILE="training_data_123.json"
 
 ```
 
@@ -99,7 +99,7 @@ source ../llama.cpp/.venv/bin/activate
 uv run 12_quantize_gguf.py --llama-cpp-dir ../llama.cpp
 
 mkdir -p ~/.lmstudio/models/mymodel/emoji-gemma-1b
-cp gguf-out/model-Q8_0.gguf ~/.lmstudio/models/mymodel/emoji-gemma-1b/
+cp trainings/onetwothree/gguf/model-Q8_0.gguf ~/.lmstudio/models/mymodel/emoji-gemma-1b/
 
 ```
 
@@ -141,3 +141,76 @@ uv run tensorboard --logdir=myemoji-gemma-adapters/
 ## クレジット
 
 Gemma Cookbookノートブック「Fine-tune Gemma 3 270M for emoji generation」をベースにしています。
+
+## TEST
+
+```bash
+export FINETUNE_GEMMA_MODEL="google/gemma-3-270m-it"
+export TRAINING_NAME="onetwothree"
+export TRAINING_DATA_FILE="training_data_123_first.json"
+
+uv run python 07_train_model_json.py   --quantization 8   --batch-size 1   --epochs 3
+
+# 第一声はうまくいく確率が高い。
+```
+
+- training_data_123_posi.json
+    - 何を言っても、「ダァーーー！！」を返す。
+    - ポジティブな学習データしかないのが原因では？
+        - ネガティブなデータを増やす対応
+- training_data_123_first.json
+    - 会話の一番はじめの「1,2,3」などには、「ダァーーー！！」と返す。
+    - 1 ターンの学習データしかないからでは？
+        - 複数ターンの学習データを増やす対応
+- training_data_123_multi.json
+    - 会話の途中でも「1,2,3」などに「ダァーーー！！」と返すが、1,2,3 とは関係無いものでも「ダァーーー！！」を返すことが多い。
+    - マルチターン会話のポジティブサンプルを大量に追加したことで、今度は「会話の途中=ダァーーー!!」と過学習してしまった可能性
+        - マルチターンの会話で「1, 2, 3」以外の入力に通常応答するサンプルを大量に追加
+- training_data_123.json
+    - 関係ない時に「ダァーーー！！」と返す時もあるけど、今まででは一番良い感じか。
+    - そもそものパラメータ数の問題もありそう。
+        - 1B で試す
+- training_data_123.json
+    - かなり良い感じになった。カタカナの「イチ、ニ、サン」には「one, two, three」を返したが、良い感じ。
+
+---
+こんにちは！
+
+onetwothree-gemma-3-1b
+こんにちは！何かお手伝いできることはありますか？
+
+---
+友達と喧嘩してしまった
+
+onetwothree-gemma-3-1b
+どんなことでしてうまくいってなかったのでしょうか。
+
+---
+1,2,3
+
+onetwothree-gemma-3-1b
+ダァーーー！！
+
+---
+友達のおにぎりを食べちゃったんだ
+
+onetwothree-gemma-3-1b
+美味しそうですね！
+
+---
+どうしたらいいかな？
+
+onetwothree-gemma-3-1b
+ゆっくりと深呼吸して、落ち着いてください。
+
+---
+イチ、ニ、サン
+
+onetwothree-gemma-3-1b
+one, two, three!
+
+---
+1,2,3
+
+onetwothree-gemma-3-1b
+ダァーーー！！ 
