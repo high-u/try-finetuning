@@ -1,5 +1,7 @@
 # Gemma 3 270M 絵文字生成ファインチューニング
 
+## 内容
+
 このプロジェクトは、Gemma 3 270Mをテキストから絵文字への変換タスクでファインチューニングするためのステップバイステップのスクリプト集です。
 
 ## セットアップ
@@ -14,24 +16,21 @@ export HF_TOKEN="hf_xxxxxxxxxxxxxxxxxxx"
 
 ## 実行手順
 
-スクリプトを順番に実行してください：
+### 環境
+
+```bash
+export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it" # google/gemma-3-270m-it, google/gemma-3-1b-it
+export TRAINING_NAME="onetwothree"
+export TRAINING_DATA_FILE="training_data_123.json"
+
+```
 
 ### 1. 認証
 
 Hugging Face Hubにログインします。環境変数`HF_TOKEN`に設定したトークンを使用して認証を行います。
 
 ```bash
-uv run python 01_login_hf.py
-```
-
-### 2. データセット読み込み
-
-Hugging Faceからテキストと絵文字のペアを含むデータセット（`kr15t3n/text2emoji`）をダウンロードします。絵文字フィールドに絵文字のみが含まれるサンプルだけをフィルタリングします。
-
-**出力**: `dataset.pkl`
-
-```bash
-uv run python 02_load_dataset.py
+uv run 01_login_hf.py
 ```
 
 ### 3. ベースモデル読み込み
@@ -41,39 +40,7 @@ Gemma 3 270Mの命令調整済みモデル（`google/gemma-3-270m-it`）をHuggi
 **出力**: `base_model_state.pt`, `tokenizer/`, `model_config.pkl`
 
 ```bash
-uv run python 03_load_model.py
-```
-
-### 4. データセット整形
-
-読み込んだデータセットを会話形式に変換します。各サンプルを「システムプロンプト」「ユーザー入力（テキスト）」「アシスタント出力（絵文字）」の3つの役割に分けて整形し、訓練用とテスト用に分割（90%/10%）します。
-
-**出力**: `training_dataset_splits.pkl`
-
-```bash
-uv run python 04_format_dataset.py
-```
-
-### 5. ベースモデルテスト（オプション）
-
-ファインチューニング前のベースモデルの性能を確認します。テストデータセットからランダムにサンプルを選び、「テキストを絵文字に翻訳」というタスクに対する出力を生成して表示します。
-
-```bash
-uv run python 05_test_base_model.py
-```
-
-### 6. トレーニング設定
-
-ファインチューニングの設定を行います：
-
-- **BitsAndBytesConfig**: モデルを4bit量子化してメモリ効率を向上
-- **LoraConfig**: パラメータ効率的なファインチューニング（PEFT）の設定
-- **SFTConfig**: 教師あり学習の設定（エポック数、バッチサイズ、学習率など）
-
-**出力**: `training_config.pkl`
-
-```bash
-uv run python 06_configure_training.py
+uv run 03_load_model.py
 ```
 
 ### 7. モデル訓練（T4 GPUで約10分）
@@ -83,7 +50,16 @@ SFTTrainerを使ってモデルをファインチューニングします。LoRA
 **出力**: `myemoji-gemma-adapters/` (LoRAアダプター), `trainer.pkl`
 
 ```bash
-uv run python 07_train_model.py
+uv run 07_train_model_json.py
+```
+
+```bash
+uv run python 07_train_model_json.py \
+  --quantization 4 \
+  --batch-size 1 \
+  --epochs 2 \
+  --max-length 512 \
+  --max-samples 1000
 ```
 
 ### 8. 訓練結果の可視化
@@ -93,7 +69,7 @@ uv run python 07_train_model.py
 **出力**: `training_loss.png`
 
 ```bash
-uv run python 08_plot_results.py
+uv run 08_plot_results.py
 ```
 
 ### 9. アダプターのマージ
@@ -103,7 +79,7 @@ uv run python 08_plot_results.py
 **出力**: `myemoji-gemma-merged/` (マージ済みモデル), `merged_model_path.pkl`
 
 ```bash
-uv run python 09_merge_adapters.py
+uv run 09_merge_adapters.py
 ```
 
 ### 10. ファインチューニング済みモデルのテスト
@@ -111,7 +87,20 @@ uv run python 09_merge_adapters.py
 ファインチューニング後のモデルとベースモデルの出力を比較します。複数のテストプロンプト（「let's go to the beach」「I love pizza」など）に対して両方のモデルの出力を表示し、性能の改善を確認します。
 
 ```bash
-uv run python 10_test_finetuned.py
+uv run 10_test_finetuned.py
+```
+
+### 12. GGUF 変換
+
+```bash
+deactivate
+source ../llama.cpp/.venv/bin/activate
+
+uv run 12_quantize_gguf.py --llama-cpp-dir ../llama.cpp
+
+mkdir -p ~/.lmstudio/models/mymodel/emoji-gemma-1b
+cp trainings/onetwothree/gguf/model-Q8_0.gguf ~/.lmstudio/models/mymodel/emoji-gemma-1b/
+
 ```
 
 ## 出力ファイル
@@ -152,3 +141,76 @@ uv run tensorboard --logdir=myemoji-gemma-adapters/
 ## クレジット
 
 Gemma Cookbookノートブック「Fine-tune Gemma 3 270M for emoji generation」をベースにしています。
+
+## TEST
+
+```bash
+export FINETUNE_GEMMA_MODEL="google/gemma-3-270m-it"
+export TRAINING_NAME="onetwothree"
+export TRAINING_DATA_FILE="training_data_123_first.json"
+
+uv run python 07_train_model_json.py   --quantization 8   --batch-size 1   --epochs 3
+
+# 第一声はうまくいく確率が高い。
+```
+
+- training_data_123_posi.json
+    - 何を言っても、「ダァーーー！！」を返す。
+    - ポジティブな学習データしかないのが原因では？
+        - ネガティブなデータを増やす対応
+- training_data_123_first.json
+    - 会話の一番はじめの「1,2,3」などには、「ダァーーー！！」と返す。
+    - 1 ターンの学習データしかないからでは？
+        - 複数ターンの学習データを増やす対応
+- training_data_123_multi.json
+    - 会話の途中でも「1,2,3」などに「ダァーーー！！」と返すが、1,2,3 とは関係無いものでも「ダァーーー！！」を返すことが多い。
+    - マルチターン会話のポジティブサンプルを大量に追加したことで、今度は「会話の途中=ダァーーー!!」と過学習してしまった可能性
+        - マルチターンの会話で「1, 2, 3」以外の入力に通常応答するサンプルを大量に追加
+- training_data_123.json
+    - 関係ない時に「ダァーーー！！」と返す時もあるけど、今まででは一番良い感じか。
+    - そもそものパラメータ数の問題もありそう。
+        - 1B で試す
+- training_data_123.json
+    - かなり良い感じになった。カタカナの「イチ、ニ、サン」には「one, two, three」を返したが、良い感じ。
+
+---
+こんにちは！
+
+onetwothree-gemma-3-1b
+こんにちは！何かお手伝いできることはありますか？
+
+---
+友達と喧嘩してしまった
+
+onetwothree-gemma-3-1b
+どんなことでしてうまくいってなかったのでしょうか。
+
+---
+1,2,3
+
+onetwothree-gemma-3-1b
+ダァーーー！！
+
+---
+友達のおにぎりを食べちゃったんだ
+
+onetwothree-gemma-3-1b
+美味しそうですね！
+
+---
+どうしたらいいかな？
+
+onetwothree-gemma-3-1b
+ゆっくりと深呼吸して、落ち着いてください。
+
+---
+イチ、ニ、サン
+
+onetwothree-gemma-3-1b
+one, two, three!
+
+---
+1,2,3
+
+onetwothree-gemma-3-1b
+ダァーーー！！ 

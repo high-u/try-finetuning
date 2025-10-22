@@ -47,7 +47,7 @@ cd ..
 ```bash
 cd gemma-finetune
 
-uv init --app --python 3.12
+uv init --app --python 3.13
 uv venv
 source .venv/bin/activate
 
