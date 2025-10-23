@@ -18,8 +18,6 @@ cd ..
 ```
 
 ```bash
-cd gemma-finetune
-
 uv init --no-readme --python 3.13
 uv venv
 source .venv/bin/activate
@@ -29,10 +27,9 @@ uv add transformers trl datasets accelerate evaluate
 uv add sentencepiece bitsandbytes protobuf
 uv add emoji tensorboard matplotlib peft huggingface-hub
 uv add mistral_common gguf
-
 ```
 
-## macos, windows wsl (cpu)
+## macos, windows wsl (cpu), linux (cpu)
 
 ```bash
 git clone https://github.com/ggml-org/llama.cpp.git

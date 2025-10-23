@@ -16,6 +16,4 @@ dist/
 wheels/
 *.egg-info
 
-# training
-trainings/
-training_data_sql.json
+finetunings/

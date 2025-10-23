@@ -45,13 +45,6 @@ print(f"Max length: {args.max_length}")
 print(f"Max samples: {args.max_samples if args.max_samples else 'all'}")
 print(f"Output directory: {BASE_DIR}")
 
-def get_device_type():
-    """CPUかCUDA GPUかを自動判別"""
-    if torch.cuda.is_available():
-        return "cuda"
-    else:
-        return "cpu"
-
 def configure_training(device_type, quantization_bits=8):
     """デバイスと量子化ビット数に応じて設定を変更"""
     model_kwargs = {'attn_implementation': 'eager'}
@@ -80,7 +73,7 @@ def configure_training(device_type, quantization_bits=8):
     else:
         # CPU用設定：量子化なし
         model_kwargs['device_map'] = "cpu"
-        model_kwargs['torch_dtype'] = torch.float32
+        model_kwargs['torch_dtype'] = torch.bfloat16 # torch.float32
         optim = "adamw_torch"
 
     return model_kwargs, optim
@@ -119,9 +112,9 @@ adapter_path = f"{BASE_DIR}/adapters"
 tokenizer_path = f'{BASE_DIR}/tokenizer'
 tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
 
-# Detect device type and configure training
-device_type = get_device_type()
-print(f"Detected device type: {device_type}")
+# Get device type from environment variable
+device_type = os.getenv("DEVICE_TYPE")
+print(f"Using device type: {device_type}")
 
 model_kwargs, optim = configure_training(device_type, args.quantization)
 
@@ -139,6 +132,7 @@ lora_config = LoraConfig(
 # Configure training arguments
 sft_args = SFTConfig(
     output_dir=adapter_path,
+    use_cpu=(device_type == "cpu"),
     num_train_epochs=args.epochs,
     per_device_train_batch_size=args.batch_size,
     per_device_eval_batch_size=args.batch_size,

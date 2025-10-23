@@ -19,13 +19,6 @@ args = parser.parse_args()
 FINETUNING_NAME = os.getenv("FINETUNING_NAME", "default")
 BASE_DIR = f"./finetunings/{FINETUNING_NAME}"
 
-def get_device_type():
-    """CPUかCUDA GPUかを自動判別"""
-    if torch.cuda.is_available():
-        return "cuda"
-    else:
-        return "cpu"
-
 def configure_inference_settings(device_type):
     """デバイスに応じて設定を変更"""
     if device_type == "cuda":
@@ -43,9 +36,9 @@ with open(model_config_path, 'r', encoding='utf-8') as f:
     model_config = json.load(f)
 gemma_model = model_config['model_name']
 
-# Detect device type and configure inference settings
-device_type = get_device_type()
-print(f"Detected device type: {device_type}")
+# Get device type from environment variable
+device_type = os.getenv("DEVICE_TYPE")
+print(f"Using device type: {device_type}")
 
 device_map, torch_dtype = configure_inference_settings(device_type)
 

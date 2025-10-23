@@ -19,11 +19,24 @@ os.makedirs(BASE_DIR, exist_ok=True)
 print(f"Fine-tuning name: {FINETUNING_NAME}")
 print(f"Model: {gemma_model}")
 print(f"Output directory: {BASE_DIR}")
+
+# Get device type from environment variable
+device_type = os.getenv("DEVICE_TYPE")
+print(f"Using device type: {device_type}")
+
+# Configure device settings based on DEVICE_TYPE
+if device_type == "cuda":
+    device_map = "auto"
+    torch_dtype = torch.bfloat16
+else:
+    device_map = "cpu"
+    torch_dtype = torch.bfloat16 # torch.float32
+
 base_model = AutoModelForCausalLM.from_pretrained(
     gemma_model,
-    device_map="auto",
+    device_map=device_map,
     attn_implementation="eager",
-    dtype=torch.bfloat16
+    torch_dtype=torch_dtype
 )
 tokenizer = AutoTokenizer.from_pretrained(gemma_model)
 

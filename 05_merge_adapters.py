@@ -9,13 +9,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 import json
 
-def get_device_type():
-    """CPUかCUDA GPUかを自動判別"""
-    if torch.cuda.is_available():
-        return "cuda"
-    else:
-        return "cpu"
-
 def configure_merge_settings(device_type):
     """デバイスに応じて設定を変更"""
     if device_type == "cuda":
@@ -46,9 +39,9 @@ adapter_path = finetuning_config['adapter_path']
 # Generate merged model path
 merged_model_path = f"{BASE_DIR}/merged"
 
-# Detect device type and configure merge settings
-device_type = get_device_type()
-print(f"Detected device type: {device_type}")
+# Get device type from environment variable
+device_type = os.getenv("DEVICE_TYPE")
+print(f"Using device type: {device_type}")
 
 device_map, torch_dtype = configure_merge_settings(device_type)
 

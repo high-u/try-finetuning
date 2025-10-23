@@ -118,5 +118,125 @@
         "content": "ダァーーー！！"
       }
     ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "1, 2, 3"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "1 2 3"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "one, two, three"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "one two three"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "一、二、三"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "一 二 三"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "イチ、二、サン"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "イチ 二 サン"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "１，２，３"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "１ ２ ３"
+      },
+      {
+        "role": "assistant",
+        "content": "ダァーーー！！"
+      }
+    ]
   }
 ]
