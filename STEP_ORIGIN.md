@@ -5,10 +5,10 @@
 ### 01. 
 
 ```bash
-export DEVICE_TYPE="cuda" # cuda | cpu
-export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it" # google/gemma-3-1b-it | google/gemma-3-270m-it
+export DEVICE_TYPE="cpu" # cuda | cpu
+export FINETUNE_GEMMA_MODEL="google/gemma-3-270m-it" # google/gemma-3-1b-it | google/gemma-3-270m-it
 export FINETUNING_NAME="onetwothree"
-export TRAINING_DATA_FILE="./data/onetwothree/training_data_123_01.json"
+export TRAINING_DATA_FILE="./data/onetwothree/training_data_123_01_2.json"
 ```
 
 ### 02. 
@@ -36,8 +36,7 @@ uv run 02_load_model.py
 ```bash
 uv run python 03_train_model.py \
   --quantization 4 \
-  --max-length 256 \
-  --epochs 6
+  --epochs 5
 ```
 
 ### 05. 
