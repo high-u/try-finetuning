@@ -11,7 +11,7 @@ import argparse
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Interactive chat with fine-tuned model')
-parser.add_argument('--system', type=str, default=None, help='System prompt')
+parser.add_argument('--system', type=str, default=None, nargs='?', const='', help='System prompt')
 parser.add_argument('--base', action='store_true', help='Use base model instead of fine-tuned model')
 args = parser.parse_args()
 

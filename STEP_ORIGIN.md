@@ -22,7 +22,19 @@ export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
 export FINETUNING_NAME="onetwothree"
 export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
 export TRAINING_QUANTIZATION=8
-export TRAINING_EPOCHS=6
+export TRAINING_EPOCHS=5
+export SYSTEM_PROMPT=""
+```
+
+### CUDA + VRAM 8GB
+
+```bash
+export DEVICE_TYPE="cuda"
+export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
+export FINETUNING_NAME="onetwothree"
+export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
+export TRAINING_QUANTIZATION=4
+export TRAINING_EPOCHS=5
 export SYSTEM_PROMPT=""
 ```
 
@@ -33,8 +45,8 @@ export DEVICE_TYPE="cuda"
 export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
 export FINETUNING_NAME="onetwothree"
 export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
-export TRAINING_QUANTIZATION=4
-export TRAINING_EPOCHS=6
+export TRAINING_QUANTIZATION=8
+export TRAINING_EPOCHS=5
 export SYSTEM_PROMPT=""
 ```
 
@@ -127,11 +139,11 @@ uv run 05_merge_adapters.py
 ## チャットで確認
 
 ```bash
-uv run 06_test_finetuned_input.py --system $SYSTEM_PROMPT
+uv run 06_test_finetuned_single.py --system $SYSTEM_PROMPT
 ```
 
 ```bash
-uv run 06_test_finetuned_input.py --base --system $SYSTEM_PROMPT
+uv run 06_test_finetuned_single.py --base --system $SYSTEM_PROMPT
 ```
 
 ## GGUF 形式
