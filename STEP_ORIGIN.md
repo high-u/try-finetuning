@@ -2,19 +2,17 @@
 
 ## 環境設定
 
-### CPU + メインメモリ 16GB
+### CPU
 
 ```bash
 export DEVICE_TYPE="cpu"
 export FINETUNE_GEMMA_MODEL="google/gemma-3-270m-it"
 export FINETUNING_NAME="emotions"
 export TRAINING_DATA_FILE="./data/emoji-emotion/dataset.json"
-export TRAINING_QUANTIZATION=4
+export TRAINING_QUANTIZATION=8
 export TRAINING_EPOCHS=2
 export SYSTEM_PROMPT="このツイートを絵文字で感情分類してください"
 ```
-
-### CPU + メインメモリ 32GB
 
 ```bash
 export DEVICE_TYPE="cpu"
@@ -22,23 +20,21 @@ export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
 export FINETUNING_NAME="onetwothree"
 export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
 export TRAINING_QUANTIZATION=8
-export TRAINING_EPOCHS=5
+export TRAINING_EPOCHS=4
 export SYSTEM_PROMPT=""
 ```
 
-### CUDA + VRAM 8GB
+### CUDA
 
 ```bash
 export DEVICE_TYPE="cuda"
-export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
-export FINETUNING_NAME="onetwothree"
-export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
-export TRAINING_QUANTIZATION=4
-export TRAINING_EPOCHS=5
-export SYSTEM_PROMPT=""
+export FINETUNE_GEMMA_MODEL="google/gemma-3-270m-it"
+export FINETUNING_NAME="emotions"
+export TRAINING_DATA_FILE="./data/emoji-emotion/dataset.json"
+export TRAINING_QUANTIZATION=8
+export TRAINING_EPOCHS=2
+export SYSTEM_PROMPT="このツイートを絵文字で感情分類してください"
 ```
-
-### CUDA + VRAM 16GB
 
 ```bash
 export DEVICE_TYPE="cuda"
@@ -46,7 +42,29 @@ export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
 export FINETUNING_NAME="onetwothree"
 export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
 export TRAINING_QUANTIZATION=8
-export TRAINING_EPOCHS=5
+export TRAINING_EPOCHS=4
+export SYSTEM_PROMPT=""
+```
+
+### もっと大きいモデル
+
+```bash
+export DEVICE_TYPE="cuda"
+export FINETUNE_GEMMA_MODEL="google/gemma-3-4b-it"
+export FINETUNING_NAME="onetwothree"
+export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
+export TRAINING_QUANTIZATION=8
+export TRAINING_EPOCHS=4
+export SYSTEM_PROMPT=""
+```
+
+```bash
+export DEVICE_TYPE="cpu"
+export FINETUNE_GEMMA_MODEL="google/gemma-3-12b-it"
+export FINETUNING_NAME="onetwothree"
+export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
+export TRAINING_QUANTIZATION=8
+export TRAINING_EPOCHS=4
 export SYSTEM_PROMPT=""
 ```
 

@@ -65,7 +65,7 @@ model.save_pretrained(merged_model_path)
 tokenizer.save_pretrained(merged_model_path)
 
 print(f"\nModel merged and saved to {merged_model_path}")
-print(f"Final model vocabulary size: {model.config.vocab_size}")
+# print(f"Final model vocabulary size: {model.config.vocab_size}")
 
 # Update config with merged model path
 finetuning_config['merged_model_path'] = merged_model_path

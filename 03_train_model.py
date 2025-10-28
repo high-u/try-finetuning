@@ -126,7 +126,7 @@ lora_config = LoraConfig(
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
-    modules_to_save=["lm_head", "embed_tokens"]
+    # modules_to_save=["lm_head", "embed_tokens"] # 新しいトークンを覚えさせる時にはコメントアウトしない方が良いらしい。コメントアウトしていると、メモリ消費量も抑えられて、学習速度も速い。
 )
 
 # Configure training arguments
