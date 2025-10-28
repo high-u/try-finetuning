@@ -8,17 +8,7 @@
 export DEVICE_TYPE="cpu"
 export FINETUNE_GEMMA_MODEL="google/gemma-3-270m-it"
 export FINETUNING_NAME="emotions"
-export TRAINING_DATA_FILE="./training_data_emotion_jp.json"
-export TRAINING_QUANTIZATION=4
-export TRAINING_EPOCHS=2
-export SYSTEM_PROMPT="このツイートを絵文字で感情分類してください"
-```
-
-```bash
-export DEVICE_TYPE="cpu"
-export FINETUNE_GEMMA_MODEL="google/gemma-3-270m-it"
-export FINETUNING_NAME="emotions"
-export TRAINING_DATA_FILE="./training_data_emotion_jp.json"
+export TRAINING_DATA_FILE="./data/emoji-emotion/dataset.json"
 export TRAINING_QUANTIZATION=4
 export TRAINING_EPOCHS=2
 export SYSTEM_PROMPT="このツイートを絵文字で感情分類してください"
@@ -30,7 +20,7 @@ export SYSTEM_PROMPT="このツイートを絵文字で感情分類してくだ�
 export DEVICE_TYPE="cpu"
 export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
 export FINETUNING_NAME="onetwothree"
-export TRAINING_DATA_FILE="./data/onetwothree/training_data_123_01.json"
+export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
 export TRAINING_QUANTIZATION=8
 export TRAINING_EPOCHS=6
 export SYSTEM_PROMPT=""
@@ -42,7 +32,7 @@ export SYSTEM_PROMPT=""
 export DEVICE_TYPE="cuda"
 export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
 export FINETUNING_NAME="onetwothree"
-export TRAINING_DATA_FILE="./data/onetwothree/training_data_123_01.json"
+export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
 export TRAINING_QUANTIZATION=4
 export TRAINING_EPOCHS=6
 export SYSTEM_PROMPT=""
@@ -142,4 +132,25 @@ uv run 06_test_finetuned_input.py --system $SYSTEM_PROMPT
 
 ```bash
 uv run 06_test_finetuned_input.py --base --system $SYSTEM_PROMPT
+```
+
+## GGUF 形式
+
+```bash
+deactivate
+
+cd ../llama.cpp
+source .venv/bin/activate
+
+# GGUF へ変換
+./llama.cpp/convert_hf_to_gguf.py ./finetunings/emotions/merged --outfile ./test-f32.gguf
+
+# 量子化
+uv run ./llama.cpp/build/bin/llama-quantize ./test-f32.gguf ./emoji-emotion-gemma-3-270m-it-Q8_0.gguf Q8_0
+```
+
+```bash
+# LM Studio 例
+mkdir -p ~/.lmstudio/models/MyModels/emoji-emotion
+cp ./emoji-emotion-gemma-3-270m-it-Q8_0.gguf ~/.lmstudio/models/MyModels/emoji-emotion/
 ```
