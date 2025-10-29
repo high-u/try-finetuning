@@ -20,6 +20,12 @@ export DEVICE_TYPE="cuda"
 export DEVICE_TYPE="mps"
 ```
 
+### XPU (Intel)
+
+```bash
+export DEVICE_TYPE="xpu"
+```
+
 ## 環境設定
 
 ### 絵文字で感情分類
