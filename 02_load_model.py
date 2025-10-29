@@ -28,6 +28,9 @@ print(f"Using device type: {device_type}")
 if device_type == "cuda":
     device_map = "auto"
     torch_dtype = torch.bfloat16
+elif device_type == "mps":
+    device_map = "mps"
+    torch_dtype = torch.bfloat16 # torch.float32
 else:
     device_map = "cpu"
     torch_dtype = torch.bfloat16 # torch.float32

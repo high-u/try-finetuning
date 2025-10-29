@@ -70,6 +70,11 @@ def configure_training(device_type, quantization_bits=8):
         # 量子化使用時はtorch_dtypeを指定しない（BitsAndBytesが自動処理）
 
         optim = "adamw_torch_fused"
+    elif device_type == "mps":
+        # Apple Silicon用設定：量子化なし
+        model_kwargs['device_map'] = "mps"
+        model_kwargs['torch_dtype'] = torch.bfloat16 # torch.float32
+        optim = "adamw_torch"
     else:
         # CPU用設定：量子化なし
         model_kwargs['device_map'] = "cpu"
