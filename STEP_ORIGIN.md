@@ -28,7 +28,7 @@ export DEVICE_TYPE="xpu"
 
 ## 環境設定
 
-### 絵文字で感情分類
+### 【学習 A】 絵文字で感情分類
 
 ```bash
 export FINETUNE_GEMMA_MODEL="google/gemma-3-270m-it"
@@ -38,13 +38,13 @@ export TRAINING_EPOCHS=2
 export SYSTEM_PROMPT="このツイートを絵文字で感情分類してください"
 ```
 
-### １、２、３ ダー
+### 【学習 B】 １、２、３ ダー
 
 ```bash
 export FINETUNE_GEMMA_MODEL="google/gemma-3-1b-it"
 export FINETUNING_NAME="onetwothree"
 export TRAINING_DATA_FILE="./data/onetwothree/dataset.json"
-export TRAINING_EPOCHS=4
+export TRAINING_EPOCHS=3
 export SYSTEM_PROMPT=""
 ```
 
@@ -83,6 +83,13 @@ uv run 02_load_model.py
 
 ```bash
 uv run python 03_train_model.py \
+  --epochs $TRAINING_EPOCHS
+```
+
+Intel
+
+```bash
+uv run python 03_train_model_intel.py \
   --epochs $TRAINING_EPOCHS
 ```
 
