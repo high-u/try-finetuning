@@ -471,18 +471,6 @@
     "messages": [
       {
         "role": "user",
-        "content": "辞書型とは？"
-      },
-      {
-        "role": "assistant",
-        "content": "辞書型は、キーと値のペアでデータを格納するデータ構造です。Pythonでは「{'key': 'value'}」のように書きます。"
-      }
-    ]
-  },
-  {
-    "messages": [
-      {
-        "role": "user",
         "content": "クラスって何？"
       },
       {
