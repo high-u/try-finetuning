@@ -39,7 +39,7 @@ uv add emoji tensorboard matplotlib peft huggingface-hub
 uv add mistral_common
 ```
 
-### Intel CPU (WSL のみ？)
+### Intel CPU
 
 https://pytorch-extension.intel.com/installation?platform=cpu&version=v2.8.0%2Bcpu&os=linux%2Fwsl2&package=pip
 
