@@ -25,12 +25,18 @@ parser.add_argument('--max-samples', type=int, default=None,
                     help='Maximum number of samples to use (default: None, use all)')
 parser.add_argument('--quantization', type=int, choices=[4, 8], default=8,
                     help='Training quantization bits: 4 or 8 (default: 8)')
+parser.add_argument('--finetuning-name', type=str, default='default',
+                    help='Fine-tuning name (default: default)')
+parser.add_argument('--training-data-file', type=str, default='training_data.json',
+                    help='Training data file path (default: training_data.json)')
+parser.add_argument('--device-type', type=str, required=True,
+                    help='Device type: cuda, mps, or cpu')
 
 args = parser.parse_args()
 
-# Environment variables
-FINETUNING_NAME = os.getenv("FINETUNING_NAME", "default")
-TRAINING_DATA_FILE = os.getenv("TRAINING_DATA_FILE", "training_data.json")
+# Arguments
+FINETUNING_NAME = args.finetuning_name
+TRAINING_DATA_FILE = args.training_data_file
 
 # Setup fine-tuning directory structure
 BASE_DIR = f"./finetunings/{FINETUNING_NAME}"
@@ -117,8 +123,8 @@ adapter_path = f"{BASE_DIR}/adapters"
 tokenizer_path = f'{BASE_DIR}/tokenizer'
 tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
 
-# Get device type from environment variable
-device_type = os.getenv("DEVICE_TYPE")
+# Get device type from command-line argument
+device_type = args.device_type
 print(f"Using device type: {device_type}")
 
 model_kwargs, optim = configure_training(device_type, args.quantization)

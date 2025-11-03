@@ -6,11 +6,22 @@ Load Gemma 3 270M instruction-tuned model
 import torch
 import os
 import json
+import argparse
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# Environment variables
-FINETUNING_NAME = os.getenv("FINETUNING_NAME", "default")
-gemma_model = os.getenv('FINETUNE_GEMMA_MODEL') or 'google/gemma-3-270m-it'
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Load base model for fine-tuning')
+parser.add_argument('--finetuning-name', type=str, default='default',
+                    help='Fine-tuning name (default: default)')
+parser.add_argument('--finetune-base-model', type=str, default='google/gemma-3-270m-it',
+                    help='Base model name (default: google/gemma-3-270m-it)')
+parser.add_argument('--device-type', type=str, required=True,
+                    help='Device type: cuda, mps, or cpu')
+args = parser.parse_args()
+
+# Arguments
+FINETUNING_NAME = args.finetuning_name
+gemma_model = args.finetune_base_model
 
 # Setup fine-tuning directory structure
 BASE_DIR = f"./finetunings/{FINETUNING_NAME}"
@@ -20,8 +31,8 @@ print(f"Fine-tuning name: {FINETUNING_NAME}")
 print(f"Model: {gemma_model}")
 print(f"Output directory: {BASE_DIR}")
 
-# Get device type from environment variable
-device_type = os.getenv("DEVICE_TYPE")
+# Get device type from command-line argument
+device_type = args.device_type
 print(f"Using device type: {device_type}")
 
 # Configure device settings based on DEVICE_TYPE

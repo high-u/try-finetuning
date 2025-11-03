@@ -17,3 +17,8 @@ wheels/
 *.egg-info
 
 finetunings/
+
+.python-version
+main.py
+pyproject.toml
+uv.lock

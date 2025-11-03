@@ -13,10 +13,14 @@ import argparse
 parser = argparse.ArgumentParser(description='Interactive chat with fine-tuned model')
 parser.add_argument('--system', type=str, default=None, nargs='?', const='', help='System prompt')
 parser.add_argument('--base', action='store_true', help='Use base model instead of fine-tuned model')
+parser.add_argument('--finetuning-name', type=str, default='default',
+                    help='Fine-tuning name (default: default)')
+parser.add_argument('--device-type', type=str, required=True,
+                    help='Device type: cuda, mps, or cpu')
 args = parser.parse_args()
 
-# Environment variables
-FINETUNING_NAME = os.getenv("FINETUNING_NAME", "default")
+# Arguments
+FINETUNING_NAME = args.finetuning_name
 BASE_DIR = f"./finetunings/{FINETUNING_NAME}"
 
 def configure_inference_settings(device_type):
@@ -36,8 +40,8 @@ with open(model_config_path, 'r', encoding='utf-8') as f:
     model_config = json.load(f)
 gemma_model = model_config['model_name']
 
-# Get device type from environment variable
-device_type = os.getenv("DEVICE_TYPE")
+# Get device type from command-line argument
+device_type = args.device_type
 print(f"Using device type: {device_type}")
 
 device_map, torch_dtype = configure_inference_settings(device_type)

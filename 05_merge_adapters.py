@@ -5,9 +5,18 @@ Merge the LoRA adapters with the base model
 
 import os
 import torch
+import argparse
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 import json
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Merge LoRA adapters with base model')
+parser.add_argument('--finetuning-name', type=str, default='default',
+                    help='Fine-tuning name (default: default)')
+parser.add_argument('--device-type', type=str, required=True,
+                    help='Device type: cuda, mps, or cpu')
+args = parser.parse_args()
 
 def configure_merge_settings(device_type):
     """デバイスに応じて設定を変更"""
@@ -20,8 +29,8 @@ def configure_merge_settings(device_type):
     
     return device_map, torch_dtype
 
-# Environment variables
-FINETUNING_NAME = os.getenv("FINETUNING_NAME", "default")
+# Arguments
+FINETUNING_NAME = args.finetuning_name
 BASE_DIR = f"./finetunings/{FINETUNING_NAME}"
 
 # Load model configuration
@@ -39,8 +48,8 @@ adapter_path = finetuning_config['adapter_path']
 # Generate merged model path
 merged_model_path = f"{BASE_DIR}/merged"
 
-# Get device type from environment variable
-device_type = os.getenv("DEVICE_TYPE")
+# Get device type from command-line argument
+device_type = args.device_type
 print(f"Using device type: {device_type}")
 
 device_map, torch_dtype = configure_merge_settings(device_type)

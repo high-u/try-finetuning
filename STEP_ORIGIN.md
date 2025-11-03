@@ -76,13 +76,19 @@ uv run 01_login_hf.py
 ## Gemma モデル取得
 
 ```bash
-uv run 02_load_model.py
+uv run 02_load_model.py \
+  --finetuning-name $FINETUNING_NAME \
+  --finetune-base-model $FINETUNE_GEMMA_MODEL \
+  --device-type $DEVICE_TYPE
 ```
 
 ## トレーニング
 
 ```bash
 uv run python 03_train_model.py \
+  --finetuning-name $FINETUNING_NAME \
+  --training-data-file $TRAINING_DATA_FILE \
+  --device-type $DEVICE_TYPE \
   --epochs $TRAINING_EPOCHS
 ```
 
@@ -90,6 +96,9 @@ Intel
 
 ```bash
 uv run python 03_train_model_intel.py \
+  --finetuning-name $FINETUNING_NAME \
+  --training-data-file $TRAINING_DATA_FILE \
+  --device-type $DEVICE_TYPE \
   --epochs $TRAINING_EPOCHS
 ```
 
@@ -97,6 +106,9 @@ CUDA でメモリ消費を抑えたい時
 
 ```bash
 uv run python 03_train_model.py \
+  --finetuning-name $FINETUNING_NAME \
+  --training-data-file $TRAINING_DATA_FILE \
+  --device-type $DEVICE_TYPE \
   --epochs $TRAINING_EPOCHS \
   --quantization 4
 ```
@@ -139,23 +151,33 @@ uv run python 03_train_model.py \
 
 
 ```bash
-uv run 04_plot_results.py
+uv run 04_plot_results.py \
+  --finetuning-name $FINETUNING_NAME
 ```
 
 ## ベースモデルとアダプターのマージ
 
 ```bash
-uv run 05_merge_adapters.py
+uv run 05_merge_adapters.py \
+  --finetuning-name $FINETUNING_NAME \
+  --device-type $DEVICE_TYPE
 ```
 
 ## チャットで確認
 
 ```bash
-uv run 06_test_finetuned_single.py --system $SYSTEM_PROMPT
+uv run 06_test_finetuned_single.py \
+  --finetuning-name $FINETUNING_NAME \
+  --device-type $DEVICE_TYPE \
+  --system $SYSTEM_PROMPT
 ```
 
 ```bash
-uv run 06_test_finetuned_single.py --base --system $SYSTEM_PROMPT
+uv run 06_test_finetuned_single.py \
+  --base \
+  --finetuning-name $FINETUNING_NAME \
+  --device-type $DEVICE_TYPE \
+  --system $SYSTEM_PROMPT
 ```
 
 ## GGUF 形式

@@ -6,9 +6,16 @@ Visualize training and validation loss
 import matplotlib.pyplot as plt
 import json
 import os
+import argparse
 
-# Environment variables
-FINETUNING_NAME = os.getenv("FINETUNING_NAME", "default")
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Plot training results')
+parser.add_argument('--finetuning-name', type=str, default='default',
+                    help='Fine-tuning name (default: default)')
+args = parser.parse_args()
+
+# Arguments
+FINETUNING_NAME = args.finetuning_name
 BASE_DIR = f"./finetunings/{FINETUNING_NAME}"
 
 # Load training log history
