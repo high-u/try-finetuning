@@ -92,16 +92,6 @@ uv run python 03_train_model.py \
   --epochs $TRAINING_EPOCHS
 ```
 
-Intel
-
-```bash
-uv run python 03_train_model_intel.py \
-  --finetuning-name $FINETUNING_NAME \
-  --training-data-file $TRAINING_DATA_FILE \
-  --device-type $DEVICE_TYPE \
-  --epochs $TRAINING_EPOCHS
-```
-
 CUDA でメモリ消費を抑えたい時
 
 ```bash

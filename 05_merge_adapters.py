@@ -29,24 +29,21 @@ def configure_merge_settings(device_type):
     
     return device_map, torch_dtype
 
-# Arguments
-FINETUNING_NAME = args.finetuning_name
-BASE_DIR = f"./finetunings/{FINETUNING_NAME}"
-
 # Load model configuration
-model_config_path = f'{BASE_DIR}/model.json'
+base_dir = f"./finetunings/{args.finetuning_name}"
+model_config_path = f'{base_dir}/model.json'
 with open(model_config_path, 'r', encoding='utf-8') as f:
     model_config = json.load(f)
 gemma_model = model_config['model_name']
 
 # Load fine-tuning config
-config_path = f'{BASE_DIR}/config.json'
+config_path = f'{base_dir}/config.json'
 with open(config_path, 'r', encoding='utf-8') as f:
     finetuning_config = json.load(f)
 adapter_path = finetuning_config['adapter_path']
 
 # Generate merged model path
-merged_model_path = f"{BASE_DIR}/merged"
+merged_model_path = f"{base_dir}/merged"
 
 # Get device type from command-line argument
 device_type = args.device_type

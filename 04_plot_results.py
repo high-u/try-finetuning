@@ -14,12 +14,9 @@ parser.add_argument('--finetuning-name', type=str, default='default',
                     help='Fine-tuning name (default: default)')
 args = parser.parse_args()
 
-# Arguments
-FINETUNING_NAME = args.finetuning_name
-BASE_DIR = f"./finetunings/{FINETUNING_NAME}"
-
 # Load training log history
-log_path = f'{BASE_DIR}/log.json'
+base_dir = f"./finetunings/{args.finetuning_name}"
+log_path = f'{base_dir}/log.json'
 with open(log_path, 'r', encoding='utf-8') as f:
     log_history = json.load(f)
 
@@ -38,7 +35,7 @@ plt.ylabel("Loss")
 plt.title("Training and Validation Loss per Epoch")
 plt.legend()
 plt.grid(True)
-plot_path = f'{BASE_DIR}/loss.png'
+plot_path = f'{base_dir}/loss.png'
 plt.savefig(plot_path, dpi=150, bbox_inches='tight')
 plt.show()
 

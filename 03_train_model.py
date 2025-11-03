@@ -23,42 +23,52 @@ parser.add_argument('--max-length', type=int, default=512,
                     help='Maximum sequence length (default: 512)')
 parser.add_argument('--max-samples', type=int, default=None,
                     help='Maximum number of samples to use (default: None, use all)')
-parser.add_argument('--quantization', type=int, choices=[4, 8], default=8,
-                    help='Training quantization bits: 4 or 8 (default: 8)')
+parser.add_argument('--quantization', type=str, choices=['', '4', '8'], default='',
+                    help='Training quantization bits: 4, 8, or "" (no quantization) (default: "")')
+parser.add_argument('--torch-dtype', type=str, choices=['float32', 'float16', 'bfloat16'], default='bfloat16',
+                    help='Torch dtype: float32, float16, or bfloat16 (default: bfloat16)')
 parser.add_argument('--finetuning-name', type=str, default='default',
                     help='Fine-tuning name (default: default)')
-parser.add_argument('--training-data-file', type=str, default='training_data.json',
-                    help='Training data file path (default: training_data.json)')
-parser.add_argument('--device-type', type=str, required=True,
-                    help='Device type: cuda, mps, or cpu')
+parser.add_argument('--training-data-file', type=str, required=True,
+                    help='Training data file path')
+parser.add_argument('--device-type', type=str, default='auto',
+                    help='Device type: cuda, mps, cpu, or auto (default: auto)')
 
 args = parser.parse_args()
 
-# Arguments
-FINETUNING_NAME = args.finetuning_name
-TRAINING_DATA_FILE = args.training_data_file
-
 # Setup fine-tuning directory structure
-BASE_DIR = f"./finetunings/{FINETUNING_NAME}"
-os.makedirs(BASE_DIR, exist_ok=True)
+base_dir = f"./finetunings/{args.finetuning_name}"
+os.makedirs(base_dir, exist_ok=True)
 
-print(f"Fine-tuning name: {FINETUNING_NAME}")
-print(f"Training data file: {TRAINING_DATA_FILE}")
-print(f"Using {args.quantization}-bit quantization for training")
+print(f"Fine-tuning name: {args.finetuning_name}")
+print(f"Training data file: {args.training_data_file}")
+quantization_info = f"{args.quantization}-bit quantization" if args.quantization else "no quantization"
+print(f"Using {quantization_info} for training")
+print(f"Torch dtype: {args.torch_dtype}")
 print(f"Batch size: {args.batch_size}")
 print(f"Epochs: {args.epochs}")
 print(f"Max length: {args.max_length}")
 print(f"Max samples: {args.max_samples if args.max_samples else 'all'}")
-print(f"Output directory: {BASE_DIR}")
+print(f"Output directory: {base_dir}")
 
-def configure_training(device_type, quantization_bits=8):
-    """デバイスと量子化ビット数に応じて設定を変更"""
+def configure_training(device_type, quantization, torch_dtype):
+    """デバイス、量子化、dtype に応じて設定を変更"""
     model_kwargs = {'attn_implementation': 'eager'}
 
-    if device_type == "cuda":
-        model_kwargs['device_map'] = "auto"
+    # device_map に device_type を直接代入
+    model_kwargs['device_map'] = device_type
 
-        if quantization_bits == 4:
+    # torch_dtype を torch モジュールの型に変換
+    dtype_mapping = {
+        'float32': torch.float32,
+        'float16': torch.float16,
+        'bfloat16': torch.bfloat16,
+    }
+
+    # CUDA デバイスの場合（または "auto" で CUDA が利用可能な場合）
+    if device_type == "cuda" or (device_type == "auto" and torch.cuda.is_available()):
+        # quantization に基づいて設定
+        if quantization == '4':
             # 4ビット量子化設定
             model_kwargs['quantization_config'] = BitsAndBytesConfig(
                 load_in_4bit=True,
@@ -66,37 +76,34 @@ def configure_training(device_type, quantization_bits=8):
                 bnb_4bit_compute_dtype=torch.bfloat16,
                 bnb_4bit_use_double_quant=True,
             )
-        else:  # 8-bit
+        elif quantization == '8':
             # 8ビット量子化設定
             model_kwargs['quantization_config'] = BitsAndBytesConfig(
                 load_in_8bit=True,
                 llm_int8_threshold=6.0,
                 llm_int8_has_fp16_weight=False
             )
-        # 量子化使用時はtorch_dtypeを指定しない（BitsAndBytesが自動処理）
+        else:
+            # 量子化なし：torch_dtype を指定
+            model_kwargs['torch_dtype'] = dtype_mapping[torch_dtype]
 
+        # CUDA 専用：adamw_torch_fused
         optim = "adamw_torch_fused"
-    elif device_type == "mps":
-        # Apple Silicon用設定：量子化なし
-        model_kwargs['device_map'] = "mps"
-        model_kwargs['torch_dtype'] = torch.bfloat16 # torch.float32
-        optim = "adamw_torch"
     else:
-        # CPU用設定：量子化なし
-        model_kwargs['device_map'] = "cpu"
-        model_kwargs['torch_dtype'] = torch.bfloat16 # torch.float32
+        # CUDA 以外：torch_dtype を指定
+        model_kwargs['torch_dtype'] = dtype_mapping[torch_dtype]
         optim = "adamw_torch"
 
     return model_kwargs, optim
 
 # Load model configuration
-model_config_path = f'{BASE_DIR}/model.json'
+model_config_path = f'{base_dir}/model.json'
 with open(model_config_path, 'r', encoding='utf-8') as f:
     model_config = json.load(f)
 gemma_model = model_config['model_name']
 
 # Load training data from JSON file
-with open(TRAINING_DATA_FILE, 'r', encoding='utf-8') as f:
+with open(args.training_data_file, 'r', encoding='utf-8') as f:
     training_data = json.load(f)
 
 # Limit dataset size to prevent excessive training time
@@ -117,17 +124,17 @@ training_dataset_splits = {
 }
 
 # Configure training parameters
-adapter_path = f"{BASE_DIR}/adapters"
+adapter_path = f"{base_dir}/adapters"
 
 # Load tokenizer
-tokenizer_path = f'{BASE_DIR}/tokenizer'
+tokenizer_path = f'{base_dir}/tokenizer'
 tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
 
 # Get device type from command-line argument
 device_type = args.device_type
 print(f"Using device type: {device_type}")
 
-model_kwargs, optim = configure_training(device_type, args.quantization)
+model_kwargs, optim = configure_training(device_type, args.quantization, args.torch_dtype)
 
 # Configure LoRA
 lora_config = LoraConfig(
@@ -188,24 +195,25 @@ print(f"\nLoRA adapters saved to {adapter_path}")
 
 # Save training log history for plotting
 training_log = trainer.state.log_history
-log_path = f'{BASE_DIR}/log.json'
+log_path = f'{base_dir}/log.json'
 with open(log_path, 'w', encoding='utf-8') as f:
     json.dump(training_log, f, indent=2, ensure_ascii=False)
 print(f"Training log saved to {log_path}")
 
 # Save fine-tuning configuration for next steps
 finetuning_config = {
-    "finetuning_name": FINETUNING_NAME,
+    "finetuning_name": args.finetuning_name,
     "adapter_path": adapter_path,
-    "training_data_file": TRAINING_DATA_FILE,
-    "base_dir": BASE_DIR,
+    "training_data_file": args.training_data_file,
+    "base_dir": base_dir,
     "train_quantization": args.quantization,
+    "train_torch_dtype": args.torch_dtype,
     "batch_size": args.batch_size,
     "epochs": args.epochs,
     "max_length": args.max_length,
     "max_samples": args.max_samples
 }
-config_path = f'{BASE_DIR}/config.json'
+config_path = f'{base_dir}/config.json'
 with open(config_path, 'w', encoding='utf-8') as f:
     json.dump(finetuning_config, f, indent=2, ensure_ascii=False)
 print(f"Fine-tuning configuration saved to {config_path}")
