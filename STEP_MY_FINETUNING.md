@@ -20,13 +20,13 @@ export DEVICE_TYPE="cuda"
 export DEVICE_TYPE="mps"
 ```
 
-### XPU (Intel)
+## バッチサイズ・メモリ消費量調整
 
 ```bash
-export DEVICE_TYPE="xpu"
+export BATCH_SIZE=4
 ```
 
-## 環境設定
+## ファインチューニング選択
 
 ### 【学習 A】 絵文字で感情分類
 
@@ -89,18 +89,8 @@ uv run python 03_train_model.py \
   --finetuning-name $FINETUNING_NAME \
   --training-data-file $TRAINING_DATA_FILE \
   --device-type $DEVICE_TYPE \
-  --epochs $TRAINING_EPOCHS
-```
-
-CUDA でメモリ消費を抑えたい時
-
-```bash
-uv run python 03_train_model.py \
-  --finetuning-name $FINETUNING_NAME \
-  --training-data-file $TRAINING_DATA_FILE \
-  --device-type $DEVICE_TYPE \
   --epochs $TRAINING_EPOCHS \
-  --quantization 4
+  --batch-size $BATCH_SIZE
 ```
 
 ## トレーニング状況の可視化
@@ -155,12 +145,16 @@ uv run 05_merge_adapters.py \
 
 ## チャットで確認
 
+### ファインチューニング後のモデル
+
 ```bash
 uv run 06_test_finetuned_single.py \
   --finetuning-name $FINETUNING_NAME \
   --device-type $DEVICE_TYPE \
   --system $SYSTEM_PROMPT
 ```
+
+### ベースモデル（ファインチューニング前）
 
 ```bash
 uv run 06_test_finetuned_single.py \
